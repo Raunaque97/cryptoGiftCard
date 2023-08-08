@@ -1,0 +1,9 @@
+*.log
+*.ptau
+*.r1cs
+*.zkey
+*_vk.json
+
+yarn.lock
+node_modules/
+package-lock.json
