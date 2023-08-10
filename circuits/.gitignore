@@ -3,6 +3,8 @@
 *.r1cs
 *.zkey
 *_vk.json
+*.wasm
+*_js/
 
 yarn.lock
 node_modules/

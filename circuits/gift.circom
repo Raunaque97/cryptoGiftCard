@@ -1,35 +1,45 @@
 pragma circom 2.1.2;
 
 include "./node_modules/circomlib/circuits/poseidon.circom";
-include "./tree.circom";
+include "./node_modules/circomlib/circuits/eddsamimcsponge.circom";
+
+
 
 /**
 
 */ 
 template Gift(nLevels) {
     signal input secret;
-    signal input treePathIndices[nLevels];
-    signal input treeSiblings[nLevels];
+    // signal input amount;
+
+    // eddsa signature
+    signal input R8x;
+    signal input R8y;
+    signal input S;
+    signal input Ax;
+    signal input Ay;
+
     signal input address;
 
-    signal output root;
-    signal output leaf; // hash(secret)
     signal output beneficiary; // address of the beneficiary
+    signal output nullifier;
 
     component poseidon = Poseidon(1);
     poseidon.inputs[0] <== secret;
-
-    component inclusionProof = MerkleTreeInclusionProof(nLevels);
-    inclusionProof.leaf <== poseidon.out;
-
-    for (var i = 0; i < nLevels; i++) {
-        inclusionProof.siblings[i] <== treeSiblings[i];
-        inclusionProof.pathIndices[i] <== treePathIndices[i];
-    }
-
-    root <== inclusionProof.root;
-    leaf <== poseidon.out;
+    
+    nullifier <== poseidon.out;
     beneficiary <== address;
+
+    // Verify the signature
+
+    component verifier = EdDSAMiMCSpongeVerifier();
+    verifier.enabled <== 0;
+    verifier.Ax <== Ax;
+    verifier.Ay <== Ay;
+    verifier.S <== S;
+    verifier.R8x <== R8x;
+    verifier.R8y <== R8y;
+    verifier.M <== secret;
 }
 
-component main {public [address]} = Gift(20);
+component main = Gift(20);
