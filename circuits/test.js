@@ -1,39 +1,53 @@
 const circomlib = require("circomlibjs");
+const crypto = require("crypto");
 const ffj = require("ffjavascript");
 const snarkjs = require("snarkjs");
 const fs = require("fs");
-const crypto = require("crypto");
 
 const { exit } = require("process");
-
-const fromHexString = (hexString) =>
-  new Uint8Array(hexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
-const toHexString = (bytes) =>
-  bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, "0"), "");
 
 const ReceiverAddress = "0x23Fc32698598980c628e8BC6a5DCCf79B2652d73";
 //create private key
 const privateKey = crypto.randomBytes(32);
+const secret = crypto.randomBytes(32);
+const amount = 1000000000000000000n; // 1e18
 
 // sign message
 (async () => {
   const eddsa = await circomlib.buildEddsa();
   const A = eddsa.prv2pub(privateKey);
 
+  // const msgBuf = fromHexString("000102030405060708090000");
+  // const msg = eddsa.babyJub.F.e(ffj.Scalar.fromRprLE(msgBuf, 0));
+
+  // calculate nullifier = poseidon(secret, amount)
+  const poseidon = await circomlib.buildPoseidon();
+  console.log("Secret:", toDecimalString(secret));
+  const hash = poseidon.F.toString(poseidon([toDecimalString(secret), amount]));
+  console.log("hash:", hash);
+  const hashBuf = fromHexString(BigInt(hash).toString(16));
+
+  console.log("hashBuf:", hashBuf);
   const msgBuf = fromHexString("000102030405060708090000");
-  const msg = eddsa.babyJub.F.e(ffj.Scalar.fromRprLE(msgBuf, 0));
-  const { R8, S } = eddsa.signMiMCSponge(privateKey, msg);
+  console.log("msgBuf:", msgBuf);
+
+  // sign hash/nullifier
+  const { R8, S } = eddsa.signMiMCSponge(privateKey, eddsa.babyJub.F.e(msgBuf));
   // verify signature
-  // console.log("verification: " + eddsa.verifyMiMCSponge(msg, { R8, S }, A));
+  console.log(
+    "verification: " +
+      eddsa.verifyMiMCSponge(eddsa.babyJub.F.e(msgBuf), { R8, S }, A)
+  );
 
   // create input for proof
   const input = {
-    Ax: BigInt("0x" + toHexString(A[0])).toString(),
-    Ay: BigInt("0x" + toHexString(A[1])).toString(),
-    R8x: BigInt("0x" + toHexString(R8[0])).toString(),
-    R8y: BigInt("0x" + toHexString(R8[1])).toString(),
+    secret: toDecimalString(secret),
+    amount: amount.toString(),
+    Ax: toDecimalString(A[0]),
+    Ay: toDecimalString(A[1]),
+    R8x: toDecimalString(R8[0]),
+    R8y: toDecimalString(R8[1]),
     S: S.toString(),
-    secret: BigInt("0x" + toHexString(msg)).toString(),
     address: BigInt(ReceiverAddress).toString(),
   };
 
@@ -77,3 +91,10 @@ const privateKey = crypto.randomBytes(32);
   console.log("Proof verified in " + (Date.now() - time) + "ms");
   exit(0);
 })();
+
+// helper functions
+const fromHexString = (hexString) =>
+  new Uint8Array(hexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
+const toHexString = (bytes) =>
+  bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, "0"), "");
+const toDecimalString = (bytes) => BigInt("0x" + toHexString(bytes)).toString();
