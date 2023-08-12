@@ -1,0 +1,9 @@
+{
+  "name": "scripts",
+  "private": true,
+  "dependencies": {
+    "circomlibjs": "^0.1.7",
+    "dotenv": "^16.3.1",
+    "minimist": "^1.2.8"
+  }
+}
