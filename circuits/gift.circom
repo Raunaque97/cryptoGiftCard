@@ -6,11 +6,12 @@ include "./node_modules/circomlib/circuits/eddsamimcsponge.circom";
 
 
 /**
-
+proves the knowledge of a valid signature of a nullifier
+nullifier = hash(secret, amount)
 */ 
-template Gift(nLevels) {
+template Gift() {
     signal input secret;
-    // signal input amount;
+    signal input amount;
 
     // eddsa signature
     signal input R8x;
@@ -24,8 +25,10 @@ template Gift(nLevels) {
     signal output beneficiary; // address of the beneficiary
     signal output nullifier;
 
-    component poseidon = Poseidon(1);
+    // compute message
+    component poseidon = Poseidon(2);
     poseidon.inputs[0] <== secret;
+    poseidon.inputs[1] <== amount;
     
     nullifier <== poseidon.out;
     beneficiary <== address;
@@ -33,13 +36,13 @@ template Gift(nLevels) {
     // Verify the signature
 
     component verifier = EdDSAMiMCSpongeVerifier();
-    verifier.enabled <== 0;
+    verifier.enabled <== 1;
     verifier.Ax <== Ax;
     verifier.Ay <== Ay;
     verifier.S <== S;
     verifier.R8x <== R8x;
     verifier.R8y <== R8y;
-    verifier.M <== secret;
+    verifier.M <== nullifier;
 }
 
-component main = Gift(20);
+component main = Gift();
