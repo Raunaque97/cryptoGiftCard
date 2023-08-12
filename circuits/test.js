@@ -76,7 +76,7 @@ const amount = 10000000000000000000n; // 10*1e18
     console.log("gift.zkey not found");
     return;
   }
-  console.log("Creating proof...");
+  console.log("Creating proof ...");
   let time = Date.now();
   const { proof, publicSignals } = await snarkjs.groth16.fullProve(
     input,
@@ -87,7 +87,7 @@ const amount = 10000000000000000000n; // 10*1e18
   console.log("Public signals:", publicSignals);
 
   // verify proof
-  console.log("Verifying proof...");
+  console.log("Verifying proof ...");
   time = Date.now();
   // get verification key from gift_vk.json
   const verification_key = JSON.parse(

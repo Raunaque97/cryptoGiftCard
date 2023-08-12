@@ -4,7 +4,7 @@
 target_folder="."
 
 wasm_target_folder="../frontend/public"
-# sol_target_folder=""
+sol_target_folder="../truffle/contracts/"
 filename="gift"
 
 # compile the .circom file using circom
@@ -28,6 +28,6 @@ cp "$filename".zkey "$wasm_target_folder"
 
 
 # create solidity verifier
-# snarkjs zkey export solidityverifier "$filename"".zkey"  "$sol_target_folder/""$filename"Verifier.sol
+snarkjs zkey export solidityverifier "$filename"".zkey"  "$sol_target_folder/""$filename"Verifier.sol
 
 # delete .r1cs file

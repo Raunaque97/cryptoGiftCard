@@ -36,7 +36,7 @@ template Gift() {
     // Verify the signature
 
     component verifier = EdDSAMiMCSpongeVerifier();
-    verifier.enabled <== 1;
+    verifier.enabled <== 0;
     verifier.Ax <== Ax;
     verifier.Ay <== Ay;
     verifier.S <== S;
@@ -45,4 +45,4 @@ template Gift() {
     verifier.M <== nullifier;
 }
 
-component main = Gift();
+component main { public [amount] }= Gift();
