@@ -11,9 +11,11 @@ const toHexString = (bytes) =>
 
   const A = eddsa.prv2pub(privateKey);
 
+  // Private Key
+  console.log("EdDSA_Private_Key: ", privateKey.toString("hex"));
   // Public Key
   console.log("Ax: ", BigInt("0x" + toHexString(A[0])).toString());
   console.log("Ay: ", BigInt("0x" + toHexString(A[1])).toString());
-  // Private Key
-  console.log("EdDSA_Private_Key: ", privateKey.toString("hex"));
+  console.log("Ax_hex: ", toHexString(A[0]));
+  console.log("Ay_hex: ", toHexString(A[1]));
 })();

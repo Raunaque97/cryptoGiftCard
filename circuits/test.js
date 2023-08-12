@@ -6,11 +6,22 @@ const fs = require("fs");
 
 const { exit } = require("process");
 
+// helpers
+const fromHexString = (hexString) =>
+  new Uint8Array(hexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
+const toHexString = (bytes) =>
+  bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, "0"), "");
+const toDecimalString = (bytes) => BigInt("0x" + toHexString(bytes)).toString();
+
 const ReceiverAddress = "0x23Fc32698598980c628e8BC6a5DCCf79B2652d73";
 //create private key
 const privateKey = crypto.randomBytes(32);
+// const privateKey = fromHexString(
+//   "c184baa56b137b7129ea145494f86dafb92dcce74cb0197b38ad4df33708f40a"
+// );
+
 const secret = crypto.randomBytes(32);
-const amount = 1000000000000000000n; // 1e18
+const amount = 10000000000000000000n; // 10*1e18
 
 // sign message
 (async () => {
@@ -22,21 +33,24 @@ const amount = 1000000000000000000n; // 1e18
 
   // calculate nullifier = poseidon(secret, amount)
   const poseidon = await circomlib.buildPoseidon();
-  console.log("Secret:", toDecimalString(secret));
   const hash = poseidon.F.toString(poseidon([toDecimalString(secret), amount]));
-  console.log("hash:", hash);
-  const hashBuf = fromHexString(BigInt(hash).toString(16));
-
-  console.log("hashBuf:", hashBuf);
-  const msgBuf = fromHexString("000102030405060708090000");
-  console.log("msgBuf:", msgBuf);
+  // console.log("hash:", hash);
+  const hashBuf = fromHexString(BigInt(hash).toString(16)).slice(0, 12);
 
   // sign hash/nullifier
-  const { R8, S } = eddsa.signMiMCSponge(privateKey, eddsa.babyJub.F.e(msgBuf));
+  const { R8, S } = eddsa.signMiMCSponge(
+    privateKey,
+    eddsa.babyJub.F.e(ffj.Scalar.fromRprLE(hashBuf, 0))
+  );
+
   // verify signature
   console.log(
     "verification: " +
-      eddsa.verifyMiMCSponge(eddsa.babyJub.F.e(msgBuf), { R8, S }, A)
+      eddsa.verifyMiMCSponge(
+        eddsa.babyJub.F.e(ffj.Scalar.fromRprLE(hashBuf, 0)),
+        { R8, S },
+        A
+      )
   );
 
   // create input for proof
@@ -50,8 +64,8 @@ const amount = 1000000000000000000n; // 1e18
     S: S.toString(),
     address: BigInt(ReceiverAddress).toString(),
   };
-
   // console.log("input:", input);
+
   // create proof
   // check if the .wasm & .zkey files exist else quit
   if (!fs.existsSync("gift.wasm")) {
@@ -91,10 +105,3 @@ const amount = 1000000000000000000n; // 1e18
   console.log("Proof verified in " + (Date.now() - time) + "ms");
   exit(0);
 })();
-
-// helper functions
-const fromHexString = (hexString) =>
-  new Uint8Array(hexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
-const toHexString = (bytes) =>
-  bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, "0"), "");
-const toDecimalString = (bytes) => BigInt("0x" + toHexString(bytes)).toString();
