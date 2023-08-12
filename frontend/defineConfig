@@ -1,0 +1,12 @@
+optimizeDeps: {
+    esbuildOptions: {
+        // Enable esbuild polyfill plugins
+        plugins: [
+            NodeGlobalsPolyfillPlugin({
+                process: true,
+                buffer: true
+            }),
+            NodeModulesPolyfillPlugin()
+        ]
+    }
+}
