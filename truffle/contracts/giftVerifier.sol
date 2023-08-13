@@ -263,7 +263,7 @@ contract Verifier {
                 8495653923123431417604973247489272438418190587263600148770280649306958101930
             ]
         );
-        vk.IC = new Pairing.G1Point[](4);
+        vk.IC = new Pairing.G1Point[](6);
 
         vk.IC[0] = Pairing.G1Point(
             20842284224644513593792979452654759125883331864384547357401657663063252542807,
@@ -284,22 +284,27 @@ contract Verifier {
             21525742179757390615419927038360698201832250769042013685693720078048436144968,
             2472497573419723317651323943227718099461308115110533472754085030936915664571
         );
+
+        vk.IC[4] = Pairing.G1Point(
+            5379488760092093649462094742862169825094602074320731015025239973293278968948,
+            17204825623381629701133330325073740036964750840293717813227689507106768916251
+        );
+
+        vk.IC[5] = Pairing.G1Point(
+            9772626358912178199704300300294722045982784509850676442591828049550783197232,
+            19224245965750272808098498663314400685690964945109448230220082474421889452529
+        );
     }
 
     function verify(
         uint[] memory input,
         Proof memory proof
     ) internal view returns (uint) {
-        uint256 snark_scalar_field = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
         VerifyingKey memory vk = verifyingKey();
         require(input.length + 1 == vk.IC.length, "verifier-bad-input");
         // Compute the linear combination vk_x
         Pairing.G1Point memory vk_x = Pairing.G1Point(0, 0);
         for (uint i = 0; i < input.length; i++) {
-            require(
-                input[i] < snark_scalar_field,
-                "verifier-gte-snark-scalar-field"
-            );
             vk_x = Pairing.addition(
                 vk_x,
                 Pairing.scalar_mul(vk.IC[i + 1], input[i])
@@ -326,7 +331,7 @@ contract Verifier {
         uint[2] memory a,
         uint[2][2] memory b,
         uint[2] memory c,
-        uint[3] memory input
+        uint[5] memory input
     ) public view returns (bool r) {
         Proof memory proof;
         proof.A = Pairing.G1Point(a[0], a[1]);
