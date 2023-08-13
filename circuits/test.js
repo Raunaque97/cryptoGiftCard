@@ -27,6 +27,8 @@ const amount = 10000000000000000000n; // 10*1e18
 (async () => {
   const eddsa = await circomlib.buildEddsa();
   const A = eddsa.prv2pub(privateKey);
+  const Ax = ffj.utils.leBuff2int(eddsa.F.fromMontgomery(A[1]), 32);
+  const Ay = ffj.utils.leBuff2int(eddsa.F.fromMontgomery(A[0]), 32);
 
   // calculate nullifier = poseidon(secret, amount)
   const poseidon = await circomlib.buildPoseidon();
@@ -54,8 +56,8 @@ const amount = 10000000000000000000n; // 10*1e18
   const input = {
     secret: toDecimalString(secret),
     amount: amount.toString(),
-    Ax: toDecimalString(A[0]),
-    Ay: toDecimalString(A[1]),
+    Ax: Ax.toString(),
+    Ay: Ay.toString(),
     R8x: toDecimalString(R8[0]),
     R8y: toDecimalString(R8[1]),
     S: S.toString(),
