@@ -44,6 +44,10 @@
 require("dotenv").config();
 // const { MNEMONIC, PROJECT_ID } = process.env;
 const infuraKey = process.env["INFURA_KEY"];
+const SEPOLIA_RPC_URL = process.env.SEPOLIA_RPC_URL;
+const GOERLI_RPC_URL = process.env.GOERLI_RPC_URL;
+const OPTIMISM_GOERLI_RPC_URL = process.env.OPTIMISM_GOERLI_RPC_URL;
+const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
 
 // const HDWalletProvider = require('@truffle/hdwallet-provider');
 module.exports = {
@@ -96,6 +100,11 @@ module.exports = {
   // Set default mocha options here, use special reporters, etc.
   mocha: {
     // timeout: 100000
+  },
+
+  plugins: ["truffle-plugin-verify"],
+  api_keys: {
+    etherscan: ETHERSCAN_API_KEY,
   },
 
   // Configure your compilers

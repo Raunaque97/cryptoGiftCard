@@ -13,10 +13,10 @@
   // TODO: get from contract
   const A = [
     fromHexString(
-      "f46946e29b52097a8121576926f1b9c73289b187f793ebca2bfdcaba298d9726"
+      "bdc848193f9c7066303c364f97672cd307c62c5971db60cf6178448a9c029c4"
     ),
     fromHexString(
-      "c48392ff5b1b5320214e681fec4cc5398a36b0d975c3842dd06475b316c7900b"
+      "22203dd3dfb48d9c529c209bc2d1dd5c21d7bda72c12ed583f66a879909f49d8"
     ),
   ];
 
