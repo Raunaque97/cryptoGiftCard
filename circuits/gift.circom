@@ -45,4 +45,4 @@ template Gift() {
     verifier.M <== nullifier;
 }
 
-component main { public [amount] }= Gift();
+component main { public [amount, Ax, Ay] }= Gift();

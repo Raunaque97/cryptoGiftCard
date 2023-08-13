@@ -15,10 +15,10 @@ const toDecimalString = (bytes) => BigInt("0x" + toHexString(bytes)).toString();
 
 const ReceiverAddress = "0x23Fc32698598980c628e8BC6a5DCCf79B2652d73";
 //create private key
-const privateKey = crypto.randomBytes(32);
-// const privateKey = fromHexString(
-//   "c184baa56b137b7129ea145494f86dafb92dcce74cb0197b38ad4df33708f40a"
-// );
+// const privateKey = crypto.randomBytes(32);
+const privateKey = fromHexString(
+  "c184baa56b137b7129ea145494f86dafb92dcce74cb0197b38ad4df33708f40a"
+);
 
 const secret = crypto.randomBytes(32);
 const amount = 10000000000000000000n; // 10*1e18
@@ -84,7 +84,6 @@ const amount = 10000000000000000000n; // 10*1e18
     "gift.zkey"
   );
   console.log("Proof created in " + (Date.now() - time) + "ms");
-  console.log("Public signals:", publicSignals);
 
   // verify proof
   console.log("Verifying proof ...");
@@ -99,7 +98,7 @@ const amount = 10000000000000000000n; // 10*1e18
     proof
   );
   if (!res) {
-    console.log("Invalid proof");
+    console.log("Invalid proof", res);
     exit(1);
   }
   console.log("Proof verified in " + (Date.now() - time) + "ms");
