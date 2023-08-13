@@ -2,17 +2,21 @@
   import { onMount } from "svelte";
   import { buildPoseidon, buildEddsa } from "circomlibjs";
   import * as ffj from "ffjavascript";
+  import { snarkjs } from "../snark";
 
   let giftCode = undefined;
   let verified = false;
   let valid = undefined;
   let claimed = undefined;
+  let beneficiary = undefined;
+
+  // TODO: get from contract
   const A = [
     fromHexString(
-      "2cb707afe37b0be069e024a7fa858453df693829220dd90eacf5f3b9e0c65321"
+      "f46946e29b52097a8121576926f1b9c73289b187f793ebca2bfdcaba298d9726"
     ),
     fromHexString(
-      "6217e2c4f5365bc10a419b9826dd5d5d75354a85f49e6a7d0572eba613059822"
+      "c48392ff5b1b5320214e681fec4cc5398a36b0d975c3842dd06475b316c7900b"
     ),
   ];
 
@@ -72,9 +76,33 @@
     console.log("verified", verified);
   });
 
-  function redeem() {
-    // Add redeem logic here
-    alert("Gift card redeemed successfully!");
+  async function redeem() {
+    if (!valid) return;
+    //generate proof
+    const input = {
+      secret: toDecimalString(fromHexString(giftCode.sec)),
+      amount: BigInt(giftCode.a).toString(),
+      Ax: toDecimalString(A[0]),
+      Ay: toDecimalString(A[1]),
+      R8x: toDecimalString(fromHexString(giftCode.R8x)),
+      R8y: toDecimalString(fromHexString(giftCode.R8y)),
+      S: giftCode.S,
+      address: BigInt(beneficiary).toString(),
+    };
+    console.log("input", input);
+    const { proof, publicSignals } = await snarkjs.groth16.fullProve(
+      input,
+      "gift.wasm",
+      "gift.zkey"
+    );
+    console.log("proof", proof);
+    console.log("publicSignals", publicSignals);
+    //convert proof to solidity inputs
+    console.log("ABC", getABCFrom(proof));
+    console.log(
+      "inputs",
+      publicSignals.map((x) => x.toString())
+    );
   }
 
   function toHexString(bytes) {
@@ -92,13 +120,30 @@
       hexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16))
     );
   }
+  function getABCFrom(proof) {
+    return {
+      a: [proof.pi_a[0], proof.pi_a[1]],
+      b: [
+        [proof.pi_b[0][1], proof.pi_b[0][0]],
+        [proof.pi_b[1][1], proof.pi_b[1][0]],
+      ],
+      c: [proof.pi_c[0], proof.pi_c[1]],
+    };
+  }
 </script>
 
 <main>
   {#if verified}
     {#if valid}
       <h1>Gift Card</h1>
-      <button on:click={redeem}>Redeem</button>
+      <div style="display: flex">
+        <input
+          type="text"
+          placeholder="receiver address"
+          bind:value={beneficiary}
+        />
+        <button on:click={redeem}>Redeem</button>
+      </div>
     {:else}
       <p>Invalid gift card code.</p>
     {/if}

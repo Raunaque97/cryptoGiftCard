@@ -28,9 +28,6 @@ const amount = 10000000000000000000n; // 10*1e18
   const eddsa = await circomlib.buildEddsa();
   const A = eddsa.prv2pub(privateKey);
 
-  // const msgBuf = fromHexString("000102030405060708090000");
-  // const msg = eddsa.babyJub.F.e(ffj.Scalar.fromRprLE(msgBuf, 0));
-
   // calculate nullifier = poseidon(secret, amount)
   const poseidon = await circomlib.buildPoseidon();
   const hash = poseidon.F.toString(poseidon([toDecimalString(secret), amount]));
